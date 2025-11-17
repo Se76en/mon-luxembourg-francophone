@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUp } from "lucide-react";
 import heroImage from "@/assets/luxembourg-hero.jpg";
@@ -8,14 +8,38 @@ import luxembourgFlag from "@/assets/luxembourg-flag.png";
 
 const Index = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300);
+      setScrollY(window.scrollY);
     };
 
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    
+    // Intersection Observer for animations
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("animate-in");
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    // Observe all animated elements
+    document.querySelectorAll('.animate-on-scroll').forEach((el) => {
+      observerRef.current?.observe(el);
+    });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      observerRef.current?.disconnect();
+    };
   }, []);
 
   const scrollToTop = () => {
@@ -68,20 +92,23 @@ const Index = () => {
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroImage})` }}
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-700"
+          style={{ 
+            backgroundImage: `url(${heroImage})`,
+            transform: `translateY(${scrollY * 0.5}px)` 
+          }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50"></div>
         </div>
         
-        <div className="relative z-10 text-center text-white px-4 fade-in-up">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-lg">
+        <div className="relative z-10 text-center text-white px-4 animate-fade-in">
+          <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-lg animate-[fade-in_1s_ease-out] hover:scale-105 transition-transform duration-300">
             Ma Destination Francophone Favorite
           </h1>
-          <h2 className="text-3xl md:text-4xl mb-6 text-accent drop-shadow-md">
+          <h2 className="text-3xl md:text-4xl mb-6 text-accent drop-shadow-md animate-[fade-in_1.2s_ease-out]">
             Le Luxembourg
           </h2>
-          <p className="text-xl md:text-2xl max-w-2xl mx-auto drop-shadow-md italic">
+          <p className="text-xl md:text-2xl max-w-2xl mx-auto drop-shadow-md italic animate-[fade-in_1.4s_ease-out]">
             Un petit pays avec un grand charme francophone.
           </p>
         </div>
@@ -90,11 +117,11 @@ const Index = () => {
       {/* Contexte Géographique */}
       <section id="contexte" className="py-20 px-4 bg-white">
         <div className="container mx-auto max-w-4xl">
-          <div className="fade-in-up">
-            <h2 className="text-4xl font-bold text-primary mb-8 text-center">
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
+            <h2 className="text-4xl font-bold text-primary mb-8 text-center hover:scale-105 transition-transform duration-300">
               Contexte Géographique
             </h2>
-            <div className="bg-accent rounded-3xl p-8 shadow-lg">
+            <div className="bg-accent rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
               <p className="text-lg leading-relaxed text-foreground mb-4">
                 Le Luxembourg, officiellement le Grand-Duché de Luxembourg, est un petit pays situé au cœur de l'Europe occidentale. 
                 Niché entre la Belgique, la France et l'Allemagne, ce pays fascinant couvre seulement 2 586 kilomètres carrés mais 
@@ -118,20 +145,22 @@ const Index = () => {
       {/* Activités et Attractions */}
       <section id="activites" className="py-20 px-4 bg-gradient-to-b from-white to-accent/30">
         <div className="container mx-auto max-w-6xl">
-          <div className="fade-in-up">
-            <h2 className="text-4xl font-bold text-secondary mb-12 text-center">
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
+            <h2 className="text-4xl font-bold text-secondary mb-12 text-center hover:scale-105 transition-transform duration-300">
               Activités et Attractions Touristiques
             </h2>
             
             <div className="grid md:grid-cols-2 gap-8 mb-8">
-              <div className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 transform hover:scale-105 transition-transform">
-                <img 
-                  src={viandenCastle} 
-                  alt="Château de Vianden" 
-                  className="w-full h-64 object-cover"
-                />
+              <div className="animate-on-scroll opacity-0 translate-x-[-50px] transition-all duration-700 delay-100 bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-rotate-1 group">
+                <div className="overflow-hidden">
+                  <img 
+                    src={viandenCastle} 
+                    alt="Château de Vianden" 
+                    className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                </div>
                 <div className="p-6">
-                  <h3 className="text-2xl font-bold text-primary mb-3">Château de Vianden</h3>
+                  <h3 className="text-2xl font-bold text-primary mb-3 group-hover:text-secondary transition-colors duration-300">Château de Vianden</h3>
                   <p className="text-foreground leading-relaxed">
                     Le magnifique château de Vianden est l'un des plus beaux châteaux féodaux d'Europe. Construit entre 
                     le XIe et XIVe siècle, il surplombe la ville pittoresque de Vianden et offre une vue spectaculaire 
@@ -140,14 +169,16 @@ const Index = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 transform hover:scale-105 transition-transform">
-                <img 
-                  src={oldTown} 
-                  alt="Vieille Ville de Luxembourg" 
-                  className="w-full h-64 object-cover"
-                />
+              <div className="animate-on-scroll opacity-0 translate-x-[50px] transition-all duration-700 delay-200 bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:rotate-1 group">
+                <div className="overflow-hidden">
+                  <img 
+                    src={oldTown} 
+                    alt="Vieille Ville de Luxembourg" 
+                    className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                </div>
                 <div className="p-6">
-                  <h3 className="text-2xl font-bold text-primary mb-3">La Vieille Ville</h3>
+                  <h3 className="text-2xl font-bold text-primary mb-3 group-hover:text-secondary transition-colors duration-300">La Vieille Ville</h3>
                   <p className="text-foreground leading-relaxed">
                     Le quartier historique de Luxembourg-Ville offre des promenades enchantées à travers des ruelles pavées, 
                     des fortifications impressionnantes et des places charmantes. Les casemates du Bock, un réseau souterrain 
@@ -157,16 +188,16 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-8 shadow-xl">
-              <h3 className="text-2xl font-bold text-primary mb-4">Autres Attractions</h3>
+            <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-300 bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500">
+              <h3 className="text-2xl font-bold text-primary mb-4 hover:scale-105 transition-transform duration-300">Autres Attractions</h3>
               <ul className="space-y-3 text-foreground text-lg">
-                <li className="flex items-start">
-                  <span className="text-secondary mr-3 text-2xl">•</span>
+                <li className="flex items-start animate-on-scroll opacity-0 translate-x-[-20px] transition-all duration-500 delay-[400ms] hover:translate-x-2">
+                  <span className="text-secondary mr-3 text-2xl animate-pulse">•</span>
                   <span><strong>La Vallée de la Moselle :</strong> région viticole proposant des dégustations de vins luxembourgeois 
                   et des paysages bucoliques le long de la rivière.</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="text-secondary mr-3 text-2xl">•</span>
+                <li className="flex items-start animate-on-scroll opacity-0 translate-x-[-20px] transition-all duration-500 delay-[500ms] hover:translate-x-2">
+                  <span className="text-secondary mr-3 text-2xl animate-pulse">•</span>
                   <span><strong>Le Palais Grand-Ducal :</strong> résidence officielle du Grand-Duc, situé au cœur de la capitale 
                   avec son architecture Renaissance magnifique.</span>
                 </li>
@@ -181,14 +212,15 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Justification des Choix */}
-      <section id="pourquoi" className="py-20 px-4 bg-gradient-to-b from-accent/30 to-primary/10">
-        <div className="container mx-auto max-w-4xl">
-          <div className="fade-in-up">
-            <h2 className="text-4xl font-bold text-primary mb-8 text-center">
+      {/* Pourquoi J'ai Choisi le Luxembourg */}
+      <section id="pourquoi" className="py-20 px-4 bg-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/5 to-transparent"></div>
+        <div className="container mx-auto max-w-4xl relative z-10">
+          <div className="animate-on-scroll opacity-0 scale-95 transition-all duration-700">
+            <h2 className="text-4xl font-bold text-primary mb-8 text-center hover:scale-105 transition-transform duration-300">
               Pourquoi J'ai Choisi le Luxembourg ?
             </h2>
-            <div className="bg-white rounded-3xl p-8 shadow-xl">
+            <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
               <p className="text-lg leading-relaxed text-foreground mb-4">
                 J'ai choisi le Luxembourg comme ma destination francophone favorite pour plusieurs raisons passionnantes. 
                 Premièrement, ce pays incarne parfaitement le multilinguisme et la diversité culturelle européenne. En tant que 
@@ -211,20 +243,26 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-primary text-primary-foreground py-8 px-4 text-center">
-        <p className="text-lg">
-          Merci d'avoir découvert le Luxembourg avec moi ! 🇱🇺
-        </p>
+      <footer className="bg-primary text-white py-8 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary via-secondary/20 to-primary opacity-50 animate-[pulse_4s_ease-in-out_infinite]"></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <p className="text-lg animate-[fade-in_1s_ease-out] hover:scale-105 transition-transform duration-300">
+            Découvrez le charme unique du Luxembourg - Où la francophonie rencontre l'Europe.
+          </p>
+          <p className="mt-4 text-sm opacity-80 animate-[fade-in_1.2s_ease-out]">
+            Présentation pour le cours de français © 2024
+          </p>
+        </div>
       </footer>
 
       {/* Scroll to Top Button */}
       {showScrollTop && (
         <Button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 rounded-full w-14 h-14 shadow-lg animate-fade-in bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+          className="fixed bottom-8 right-8 rounded-full w-12 h-12 shadow-lg z-50 animate-[fade-in_0.3s_ease-out] hover:scale-110 hover:rotate-12 transition-all duration-300 hover:shadow-2xl"
           size="icon"
         >
-          <ArrowUp className="h-6 w-6" />
+          <ArrowUp className="h-5 w-5 animate-bounce" />
         </Button>
       )}
     </div>
